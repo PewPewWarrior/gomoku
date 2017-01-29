@@ -12,10 +12,6 @@
         <input type="text" id="roomId" placeholder="Room ID">
         <input type="submit" value="Join room">
     </form>
-    <form id="sendMessage" method="POST" action='#'>
-        <input type="text" id="message" placeholder="Message">
-        <input type="submit" value="Send message">
-    </form>
     <form id="makeMove" method="POST" action='#'>
         <input type="text" id="x" placeholder="x">
         <input type="text" id="y" placeholder="y">
@@ -43,10 +39,6 @@
         });
         $('form#joinRoom').submit(function(event) {
             socket.emit('join room', {room: $('#roomId').val()});
-            return false;
-        });
-        $('form#sendMessage').submit(function(event) {
-            socket.emit('send message', {room: $('#roomId').val(), message: $('#message').val()});
             return false;
         });
         $('form#makeMove').submit(function(event) {

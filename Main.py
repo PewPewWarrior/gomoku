@@ -21,14 +21,14 @@ class GameState(Enum):
 
 
 class Game:
-    def __init__(self, gameName):
-        self.gameName = gameName
+    def __init__(self, game_name):
+        self.gameName = game_name
         self.player1 = ''
         self.player2 = ''
         self.state = GameState.NOT_READY
         self.currentPlayer = ''
 
-    def addPlayer(self, player):
+    def add_player(self, player):
         if self.player1 == '':
             self.player1 = player
         elif self.player2 == '' and self.player1 != player:
@@ -36,12 +36,15 @@ class Game:
             self.state = GameState.IN_PROGRESS
             self.currentPlayer = self.player1
 
-    def nextTurn(self, player, x, y):
+    def next_turn(self, player, x, y):
         if self.state == GameState.IN_PROGRESS and self.currentPlayer == player:
             print(x + ' ' + y)
-            self.currentPlayer = self.player2 if player == self.player1 else self.player1
+            self.switch_player(player)
 
-    def printGameInfo(self):
+    def switch_player(self, player):
+        self.currentPlayer = self.player2 if player == self.player1 else self.player1
+
+    def print_game_info(self):
         print('Game name: ' + str(self.gameName) + ' player1: ' + self.player1 + ' player 2: ' + self.player2)
 
 
@@ -59,34 +62,28 @@ def connect():
 def on_join_room(data):
     join_room(data['room'])
     game = next((x for x in games if str(x.gameName) == data['room']), None)
-    game.addPlayer(request.sid)
-    game.printGameInfo()
+    game.add_player(request.sid)
+    game.print_game_info()
 
 
 @socketio.on('make move', namespace='/gomoku')
 def on_make_move(data):
     game = next((x for x in games if str(x.gameName) == data['room']), None)
-    game.nextTurn(request.sid, data['x'], data['y'])
+    game.next_turn(request.sid, data['x'], data['y'])
 
 
 @socketio.on('create room', namespace='/gomoku')
 def on_create_room():
-    newGame = Game(uuid.uuid1())
-    newGame.printGameInfo()
-    games.append(newGame)
-    socketio.emit('room created', {'roomId': str(newGame.gameName)}, namespace='/gomoku', room=str(newGame.gameName))
+    new_game = Game(uuid.uuid1())
+    games.append(new_game)
+    socketio.emit('room created', {'roomId': str(new_game.gameName)}, namespace='/gomoku', room=str(new_game.gameName))
+    print('Room created: ' + str(new_game.gameName))
 
 
 @socketio.on('leave room', namespace='/gomoku')
 def on_leave_room(data):
     leave_room(data['room'])
     print(request.sid + 'left room: ' + data['room'])
-
-
-@socketio.on('send message', namespace='/gomoku')
-def on_receive_message(data):
-    print(request.sid + " message: " + data['message'])
-    socketio.emit('reply', {'message': data['message']}, namespace='/gomoku', room=data['room'])
 
 
 @socketio.on('disconnect', namespace='/gomoku')
