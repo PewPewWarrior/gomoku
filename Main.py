@@ -55,7 +55,7 @@ def index():
 
 @socketio.on('connect', namespace='/gomoku')
 def connect():
-    print("connect " + request.sid)
+    print("Client connected: " + request.sid)
 
 
 @socketio.on('join room', namespace='/gomoku')
@@ -76,19 +76,19 @@ def on_make_move(data):
 def on_create_room():
     new_game = Game(uuid.uuid1())
     games.append(new_game)
-    socketio.emit('room created', {'roomId': str(new_game.gameName)}, namespace='/gomoku', room=str(new_game.gameName))
+    socketio.emit('room created', {'roomId': str(new_game.gameName)}, namespace='/gomoku', room=request.sid)
     print('Room created: ' + str(new_game.gameName))
 
 
 @socketio.on('leave room', namespace='/gomoku')
 def on_leave_room(data):
     leave_room(data['room'])
-    print(request.sid + 'left room: ' + data['room'])
+    print(request.sid + ' left room: ' + data['room'])
 
 
 @socketio.on('disconnect', namespace='/gomoku')
 def disconnect():
-    print('disconnect ', request.sid)
+    print('Client disconnected: ' + request.sid)
 
 
 if __name__ == '__main__':
