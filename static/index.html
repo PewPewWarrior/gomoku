@@ -5,6 +5,9 @@
     <title>Test</title>
 </head>
 <body>
+    <form id="createRoom" method="POST" action='#'>
+        <input type="submit" value="Create room">
+    </form>
     <form id="joinRoom" method="POST" action='#'>
         <input type="text" id="roomId" placeholder="Room ID">
         <input type="submit" value="Join room">
@@ -12,6 +15,11 @@
     <form id="sendMessage" method="POST" action='#'>
         <input type="text" id="message" placeholder="Message">
         <input type="submit" value="Send message">
+    </form>
+    <form id="makeMove" method="POST" action='#'>
+        <input type="text" id="x" placeholder="x">
+        <input type="text" id="y" placeholder="y">
+        <input type="submit" value="Make move">
     </form>
 
     <script
@@ -25,13 +33,24 @@
         socket.on('reply', function(data) {
             console.log(data);
         });
+        socket.on('room created', function(data) {
+            console.log(data.roomId);
+        });
 
+        $('form#createRoom').submit(function(event) {
+            socket.emit('create room');
+            return false;
+        });
         $('form#joinRoom').submit(function(event) {
             socket.emit('join room', {room: $('#roomId').val()});
             return false;
         });
         $('form#sendMessage').submit(function(event) {
-            socket.emit('test event', {room: $('#roomId').val(), data: $('#message').val()});
+            socket.emit('send message', {room: $('#roomId').val(), message: $('#message').val()});
+            return false;
+        });
+        $('form#makeMove').submit(function(event) {
+            socket.emit('make move', {room: $('#roomId').val(), x: $('#x').val(), y: $('#y').val()});
             return false;
         });
     </script>
