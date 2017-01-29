@@ -5,20 +5,35 @@
     <title>Test</title>
 </head>
 <body>
-    <button onclick="sendMessage()">Send message</button>
+    <form id="joinRoom" method="POST" action='#'>
+        <input type="text" id="roomId" placeholder="Room ID">
+        <input type="submit" value="Join room">
+    </form>
+    <form id="sendMessage" method="POST" action='#'>
+        <input type="text" id="message" placeholder="Message">
+        <input type="submit" value="Send message">
+    </form>
+
     <script
       src="https://code.jquery.com/jquery-3.1.1.min.js"
       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
       crossorigin="anonymous"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
-        socket = io.connect('http://localhost:8000/gomoku');
+        socket = io.connect('http://localhost:5000/gomoku');
+
         socket.on('reply', function(data) {
             console.log(data);
         });
-        function sendMessage() {
-            socket.emit('test event', {data: 'test message!'});
-        };
+
+        $('form#joinRoom').submit(function(event) {
+            socket.emit('join room', {room: $('#roomId').val()});
+            return false;
+        });
+        $('form#sendMessage').submit(function(event) {
+            socket.emit('test event', {room: $('#roomId').val(), data: $('#message').val()});
+            return false;
+        });
     </script>
 </body>
 </html>

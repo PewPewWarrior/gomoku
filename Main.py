@@ -1,10 +1,13 @@
-import socketio
-import eventlet.wsgi
-from flask import Flask, send_from_directory
+from flask import Flask, render_template, session, request, send_from_directory
+from flask_socketio import SocketIO, emit, join_room, leave_room, \
+    close_room, rooms, disconnect
 
-sio = socketio.Server()
+async_mode = None
+
 app = Flask(__name__)
-appPort = 8000
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, async_mode=async_mode)
+thread = None
 
 
 @app.route('/')
@@ -12,22 +15,33 @@ def index():
     return send_from_directory('static', 'index.html')
 
 
-@sio.on('connect', namespace='/gomoku')
-def connect(sid, environ):
-    print("connect ", sid)
+@socketio.on('connect', namespace='/gomoku')
+def connect():
+    print("connect " + request.sid)
 
 
-@sio.on('test event', namespace='/gomoku')
-def message(sid, data):
+@socketio.on('join room', namespace='/gomoku')
+def on_join_room(data):
+    join_room(data['room'])
+    print(request.sid + ' joined room: ' + data['room'])
+
+
+@socketio.on('leave room', namespace='/gomoku')
+def on_leave_room(data):
+    leave_room(data['room'])
+    print(request.sid + 'left room: ' + data['room'])
+
+
+@socketio.on('test event', namespace='/gomoku')
+def message(data):
     print("message ", data)
-    sio.emit('reply', sid, namespace='/gomoku', room=sid)
+    socketio.emit('reply', {'data': 'Ok!'}, namespace='/gomoku', room=data['room'])
 
 
-@sio.on('disconnect', namespace='/gomoku')
-def disconnect(sid):
-    print('disconnect ', sid)
+@socketio.on('disconnect', namespace='/gomoku')
+def disconnect():
+    print('disconnect ', request.sid)
 
 
 if __name__ == '__main__':
-    app = socketio.Middleware(sio, app)
-    eventlet.wsgi.server(eventlet.listen(('', appPort)), app)
+    socketio.run(app, debug=True)
