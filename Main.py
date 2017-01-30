@@ -13,6 +13,11 @@ def index():
     return send_from_directory('static', 'index.html')
 
 
+@app.route('/js/<path:path>')
+def scripts(path):
+    return send_from_directory('static/js', path)
+
+
 @socket_io.on('connect', namespace='/gomoku')
 def connect():
     print("Client connected: " + request.sid)
