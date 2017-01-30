@@ -4,13 +4,8 @@ from flask_socketio import SocketIO, emit, join_room, leave_room, \
 from enum import Enum
 import uuid
 
-async_mode = None
-
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, async_mode=async_mode)
-thread = None
-
+socketio = SocketIO(app, async_mode=None)
 games = []
 
 
@@ -45,7 +40,7 @@ class Game:
         self.currentPlayer = self.player2 if player == self.player1 else self.player1
 
     def print_game_info(self):
-        print('Game name: ' + str(self.gameName) + ' player1: ' + self.player1 + ' player 2: ' + self.player2)
+        print('Game name: ' + str(self.gameName) + ' player1: ' + self.player1 + ' player2: ' + self.player2)
 
 
 @app.route('/')
@@ -60,16 +55,28 @@ def connect():
 
 @socketio.on('join room', namespace='/gomoku')
 def on_join_room(data):
-    join_room(data['room'])
-    game = next((x for x in games if str(x.gameName) == data['room']), None)
+    game_name = data['room']
+    join_room(game_name)
+    game = find_game(game_name)
     game.add_player(request.sid)
+    emit_game_update_event(game)
     game.print_game_info()
 
 
 @socketio.on('make move', namespace='/gomoku')
 def on_make_move(data):
-    game = next((x for x in games if str(x.gameName) == data['room']), None)
+    game = find_game(data['room'])
     game.next_turn(request.sid, data['x'], data['y'])
+    emit_game_update_event(game)
+
+
+def find_game(game_name):
+    return next((x for x in games if str(x.gameName) == game_name), None)
+
+
+def emit_game_update_event(game):
+    socketio.emit('game updated', {'roomId': str(game.gameName), 'currentPlayer': game.currentPlayer,
+                                   'state': str(game.state)}, namespace='/gomoku', room=str(game.gameName))
 
 
 @socketio.on('create room', namespace='/gomoku')
