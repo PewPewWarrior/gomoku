@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Gomoku!</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
 <form id="createRoom" method="POST" action='#'>
@@ -17,13 +18,13 @@
     <input type="text" id="y" placeholder="y">
     <input type="submit" value="Make move">
 </form>
-<div id="gameId" style="color: red">
+<div id="gameId" class="roomId">
     Current room:
 </div>
-<div id="status" style="color: green">
+<div id="status" class="status">
     Create or join room
 </div>
-<div id="board" style="font-size:200%">
+<div id="board" class="board">
 </div>
 
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"

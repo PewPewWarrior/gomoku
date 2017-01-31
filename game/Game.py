@@ -1,4 +1,4 @@
-from GameState import GameState
+from .GameState import GameState
 
 
 class Game:
