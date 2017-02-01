@@ -7,5 +7,40 @@
 }
 
 .board {
-    font-size: 200%;
+    width: 684px;
+    margin-top: 10px;
+}
+
+.square {
+    float: left;
+    display: block;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.horizontalBar {
+    float: left;
+    display: block;
+    width: 684px;
+    height: 6px;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.verticalBar {
+    float: left;
+    display: block;
+    width: 6px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+form {
+    display: inline-block;
 }

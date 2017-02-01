@@ -13,16 +13,6 @@ def index():
     return send_from_directory('static', 'index.html')
 
 
-@app.route('/js/<path:path>')
-def js(path):
-    return send_from_directory('static/js', path)
-
-
-@app.route('/css/<path:path>')
-def css(path):
-    return send_from_directory('static/css', path)
-
-
 @socket_io.on('connect', namespace='/gomoku')
 def connect():
     print("Client connected: " + request.sid)
