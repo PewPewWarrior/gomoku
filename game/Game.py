@@ -1,4 +1,5 @@
 from .GameState import GameState
+import time
 
 
 class Game:
@@ -12,6 +13,7 @@ class Game:
         self.state = GameState.NOT_READY
         self.currentPlayer = ''
         self.board = [[0 for x in range(self.BOARD_SIZE)] for y in range(self.BOARD_SIZE)]
+        self.lastMoveTimestamp = time.time()
 
     def add_player(self, player):
         if self.player1 == '':
@@ -30,6 +32,7 @@ class Game:
                     self.state = GameState.FINISHED
                     return
                 self.switch_player(player)
+                self.lastMoveTimestamp = time.time()
 
     def check_if_finished(self, x, y):
         symbol = self.board[x][y]

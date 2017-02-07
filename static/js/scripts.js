@@ -11,6 +11,11 @@ socket.on('room created', function(data) {
     socket.emit('join room', {room: currentRoom});
     updateRoomInfo();
 });
+socket.on('game interrupted', function(data) {
+    currentRoom = '';
+    updateRoomInfo();
+    updateStatus(data.reason);
+});
 socket.on('game updated', function(data) {
     if (data.state == 'GameState.NOT_READY') {
         updateStatus('Waiting for other player to join');
@@ -38,6 +43,10 @@ $('form#joinRoom').submit(function(event) {
     socket.emit('join room', {room: currentRoom});
     updateRoomInfo();
     return false;
+});
+
+$(window).on("beforeunload", function() {
+    socket.emit('leave room', {room: currentRoom});
 });
 
 <!-- helper functions -->

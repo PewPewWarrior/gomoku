@@ -1,16 +1,39 @@
 from flask import Flask, request, send_from_directory
-from flask_socketio import SocketIO, join_room, leave_room, close_room
+from flask_socketio import SocketIO, join_room, close_room
 from game import Game, GameState
 import uuid
+import time
+import threading
+
+MOVE_TIMEOUT = 300
+THREAD_SLEEP_TIME = 300
 
 app = Flask(__name__)
-socket_io = SocketIO(app, async_mode=None)
+socket_io = SocketIO(app)
+thread = None
 games = []
 
 
 @app.route('/')
 def index():
+    global thread
+    if thread is None:
+        thread = threading.Thread(target=close_inactive_games_thread)
+        thread.start()
     return send_from_directory('static', 'index.html')
+
+
+def close_inactive_games_thread():
+    while True:
+        time.sleep(THREAD_SLEEP_TIME)
+        close_inactive_games()
+
+
+def close_inactive_games():
+    for game in games:
+        if time.time() - game.lastMoveTimestamp > MOVE_TIMEOUT:
+            close_room(game.gameName)
+            games.remove(game)
 
 
 @socket_io.on('connect', namespace='/gomoku')
@@ -32,11 +55,12 @@ def on_join_room(data):
 def on_make_move(data):
     room = data['room']
     game = find_game(room)
-    game.next_turn(request.sid, int(data['x']), int(data['y']))
-    emit_game_update_event(game)
-    if game.state == GameState.FINISHED:
-        close_room(room)
-        del game
+    if game is not None:
+        game.next_turn(request.sid, int(data['x']), int(data['y']))
+        emit_game_update_event(game)
+        if game.state == GameState.FINISHED:
+            close_room(room)
+            games.remove(game)
 
 
 def find_game(game_name):
@@ -46,6 +70,11 @@ def find_game(game_name):
 def emit_game_update_event(game):
     socket_io.emit('game updated', {'roomId': str(game.gameName), 'currentPlayer': game.currentPlayer,
                                     'state': str(game.state), 'board': game.board},
+                   namespace='/gomoku', room=str(game.gameName))
+
+
+def emit_game_interrupted_event(game):
+    socket_io.emit('game interrupted', {'roomId': str(game.gameName), 'reason': 'other player left'},
                    namespace='/gomoku', room=str(game.gameName))
 
 
@@ -59,8 +88,13 @@ def on_create_room():
 
 @socket_io.on('leave room', namespace='/gomoku')
 def on_leave_room(data):
-    leave_room(data['room'])
-    print(request.sid + ' left room: ' + data['room'])
+    room = data['room']
+    game = find_game(room)
+    if game.player1 == request.sid or game.player2 == request.sid:
+        emit_game_interrupted_event(game)
+        close_room(room)
+        games.remove(game)
+    print(request.sid + ' left room: ' + room)
 
 
 @socket_io.on('disconnect', namespace='/gomoku')
