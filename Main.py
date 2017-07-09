@@ -36,12 +36,12 @@ def close_inactive_games():
             games.remove(game)
 
 
-@socket_io.on('connect', namespace='/gomoku')
+@socket_io.on('connect')
 def connect():
     print("Client connected: " + request.sid)
 
 
-@socket_io.on('join room', namespace='/gomoku')
+@socket_io.on('join room')
 def on_join_room(data):
     game_name = data['room']
     join_room(game_name)
@@ -51,7 +51,7 @@ def on_join_room(data):
     game.print_game_info()
 
 
-@socket_io.on('make move', namespace='/gomoku')
+@socket_io.on('make move')
 def on_make_move(data):
     room = data['room']
     game = find_game(room)
@@ -70,23 +70,23 @@ def find_game(game_name):
 def emit_game_update_event(game):
     socket_io.emit('game updated', {'roomId': str(game.gameName), 'currentPlayer': game.currentPlayer,
                                     'state': str(game.state), 'board': game.board},
-                   namespace='/gomoku', room=str(game.gameName))
+                   room=str(game.gameName))
 
 
 def emit_game_interrupted_event(game):
     socket_io.emit('game interrupted', {'roomId': str(game.gameName), 'reason': 'other player left'},
-                   namespace='/gomoku', room=str(game.gameName))
+                   room=str(game.gameName))
 
 
-@socket_io.on('create room', namespace='/gomoku')
+@socket_io.on('create room')
 def on_create_room():
     new_game = Game(uuid.uuid1())
     games.append(new_game)
-    socket_io.emit('room created', {'roomId': str(new_game.gameName)}, namespace='/gomoku', room=request.sid)
+    socket_io.emit('room created', {'roomId': str(new_game.gameName)}, room=request.sid)
     print('Room created: ' + str(new_game.gameName))
 
 
-@socket_io.on('leave room', namespace='/gomoku')
+@socket_io.on('leave room')
 def on_leave_room(data):
     room = data['room']
     game = find_game(room)
@@ -97,10 +97,10 @@ def on_leave_room(data):
     print(request.sid + ' left room: ' + room)
 
 
-@socket_io.on('disconnect', namespace='/gomoku')
+@socket_io.on('disconnect')
 def disconnect():
     print('Client disconnected: ' + request.sid)
 
 
 if __name__ == '__main__':
-    socket_io.run(app, debug=True, host='0.0.0.0')
+    socket_io.run(app, debug=True, host='0.0.0.0', port=5000)

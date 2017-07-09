@@ -1,4 +1,4 @@
-socket = io.connect('http://localhost:5000/gomoku');
+socket = io();
 currentRoom = '';
 userId = '';
 
@@ -66,18 +66,18 @@ function formatBoard(board) {
         for (var x = 0; x < BOARD_SIZE; x++) {
             if (board[x][y] == '0') {
                 formatted +=
-                        '<img class="square" src="/static/img/empty.png" onclick="selectSquare('+ x + ',' + y + ')">';
+                        '<img class="square" src="static/img/empty.png" onclick="selectSquare('+ x + ',' + y + ')">';
             } else if (board[x][y] == '1') {
-                formatted += '<img class="square" src="/static/img/x.png">';
+                formatted += '<img class="square" src="static/img/x.png">';
             } else {
-                formatted += '<img class="square" src="/static/img/o.png">';
+                formatted += '<img class="square" src="static/img/o.png">';
             }
             if (x != BOARD_SIZE - 1) {
-                formatted += '<img class="verticalBar" src="/static/img/solid.png">';
+                formatted += '<img class="verticalBar" src="static/img/solid.png">';
             }
         }
         if (y != BOARD_SIZE - 1) {
-            formatted += '<img class="horizontalBar" src="/static/img/solid.png">';
+            formatted += '<img class="horizontalBar" src="static/img/solid.png">';
         }
     }
     return formatted;
